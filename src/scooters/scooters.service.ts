@@ -1,27 +1,31 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateScooterDto } from './dto/create-scooter.dto';
 import { UpdateScooterDto } from './dto/update-scooter.dto';
 import { Scooter } from './entities/scooter.entity';
 
 @Injectable()
 export class ScootersService {
-  create(createScooterDto: CreateScooterDto) {
-    return 'This action adds a new scooter';
+  constructor(
+    // 注入 Users Entity
+    @InjectRepository(Scooter)
+    private readonly scooterRepo: Repository<Scooter>,
+  ) {}
+
+  async create(createScooterDto: CreateScooterDto): Promise<Scooter> {
+    return await this.scooterRepo.save(createScooterDto);
   }
 
-  findAll(): Promise<Scooter[]> {
-    return `This action returns all scooters`;
+  async findAll(): Promise<Scooter[]> {
+    return await this.scooterRepo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} scooter`;
+  async findOne(plateNumber: string) {
+    return await this.scooterRepo.findOne(plateNumber);
   }
 
-  update(id: number, updateScooterDto: UpdateScooterDto) {
-    return `This action updates a #${id} scooter`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} scooter`;
+  update(plateNumber: string, updateScooterDto: UpdateScooterDto) {
+    return `This action updates a #${plateNumber} scooter`;
   }
 }

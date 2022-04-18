@@ -4,8 +4,7 @@ import {
   Post,
   Body,
   Patch,
-  Param,
-  Delete,
+  Param
 } from '@nestjs/common';
 import { ScootersService } from './scooters.service';
 import { CreateScooterDto } from './dto/create-scooter.dto';
@@ -25,13 +24,16 @@ export class ScootersController {
     return this.scootersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.scootersService.findOne(+id);
+  @Get(':plateNumber')
+  findOne(@Param('plateNumber') plateNumber: string) {
+    return this.scootersService.findOne(`${plateNumber}`);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateScooterDto: UpdateScooterDto) {
-    return this.scootersService.update(+id, updateScooterDto);
+  @Patch(':plateNumber')
+  update(
+    @Param('plateNumber') plateNumber: string,
+    @Body() updateScooterDto: UpdateScooterDto,
+  ) {
+    return this.scootersService.update(`${plateNumber}`, updateScooterDto);
   }
 }
