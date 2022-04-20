@@ -1,11 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets } from 'typeorm';
 import { CreateScooterDto } from './dto/create-scooter.dto';
 import { SearchScooterDto } from './dto/search-scooter.dto';
 import { UpdateScooterDto } from './dto/update-scooter.dto';
 import { Scooter } from './entities/scooter.entity';
-import { ScootersPagination } from './interfaces/scooters.pagination';
+import { ScootersPaginationDto } from './dto/scooter-pagination.dto';
 import { ScootersRepository } from './scooters.repository';
 
 @Injectable()
@@ -16,12 +20,21 @@ export class ScootersService {
   ) {}
 
   async createScooter(createScooterDto: CreateScooterDto): Promise<Scooter> {
+    createScooterDto.plate_number = createScooterDto.plate_number.toUpperCase();
+    const isExist = await this.scooterRepo.findOne(
+      createScooterDto.plate_number,
+    );
+    if (isExist) {
+      throw new ConflictException(
+        `Duplicated Scooter Data: "${createScooterDto.plate_number}"`,
+      );
+    }
     return await this.scooterRepo.createScooter(createScooterDto);
   }
 
   async searchScooter(
     searchScooterDto: SearchScooterDto,
-  ): Promise<ScootersPagination> {
+  ): Promise<ScootersPaginationDto> {
     const page = Math.max(1, searchScooterDto.page || 1);
     const limit = Math.max(1, searchScooterDto.limit || 15);
 
@@ -101,6 +114,7 @@ export class ScootersService {
   }
 
   async findScooter(plateNumber: string) {
+    plateNumber = plateNumber.toUpperCase();
     const scooter = await this.scooterRepo.findOne(plateNumber);
     if (!scooter) {
       throw new NotFoundException(`Not Found Scooter Data: "${plateNumber}"`);
@@ -112,6 +126,8 @@ export class ScootersService {
     plateNumber: string,
     updateScooterDto: UpdateScooterDto,
   ): Promise<Scooter> {
+    plateNumber = plateNumber.toUpperCase();
+
     // Get scooter record
     const scooter = await this.findScooter(plateNumber);
 

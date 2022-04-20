@@ -2,7 +2,7 @@ import { Scooter } from './entities/scooter.entity';
 import { Brackets, EntityRepository, ObjectLiteral, Repository } from 'typeorm';
 import { CreateScooterDto } from './dto/create-scooter.dto';
 import { InternalServerErrorException } from '@nestjs/common';
-import { ScootersPagination } from './interfaces/scooters.pagination';
+import { ScootersPaginationDto } from './dto/scooter-pagination.dto';
 
 @EntityRepository(Scooter)
 export class ScootersRepository extends Repository<Scooter> {
@@ -39,7 +39,7 @@ export class ScootersRepository extends Repository<Scooter> {
       | ((qb: this) => string)
       | ObjectLiteral
       | ObjectLiteral[],
-  ): Promise<ScootersPagination> {
+  ): Promise<ScootersPaginationDto> {
     const skip = page <= 1 ? 0 : (page - 1) * limit;
     const builder = this.createQueryBuilder();
 
