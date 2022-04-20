@@ -4,11 +4,13 @@ import {
   Post,
   Body,
   Patch,
-  Param
+  Param,
+  Query,
 } from '@nestjs/common';
 import { ScootersService } from './scooters.service';
 import { CreateScooterDto } from './dto/create-scooter.dto';
 import { UpdateScooterDto } from './dto/update-scooter.dto';
+import { SearchScooterDto } from './dto/search-scooter.dto';
 
 @Controller('scooters')
 export class ScootersController {
@@ -16,17 +18,17 @@ export class ScootersController {
 
   @Post()
   create(@Body() createScooterDto: CreateScooterDto) {
-    return this.scootersService.create(createScooterDto);
+    return this.scootersService.createScooter(createScooterDto);
   }
 
   @Get()
-  findAll() {
-    return this.scootersService.findAll();
+  search(@Query() searchScooterDto: SearchScooterDto) {
+    return this.scootersService.searchScooter(searchScooterDto);
   }
 
   @Get(':plateNumber')
   findOne(@Param('plateNumber') plateNumber: string) {
-    return this.scootersService.findOne(`${plateNumber}`);
+    return this.scootersService.findScooter(`${plateNumber}`);
   }
 
   @Patch(':plateNumber')
@@ -34,6 +36,9 @@ export class ScootersController {
     @Param('plateNumber') plateNumber: string,
     @Body() updateScooterDto: UpdateScooterDto,
   ) {
-    return this.scootersService.update(`${plateNumber}`, updateScooterDto);
+    return this.scootersService.updateScooter(
+      `${plateNumber}`,
+      updateScooterDto,
+    );
   }
 }

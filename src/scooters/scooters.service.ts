@@ -1,31 +1,124 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets } from 'typeorm';
 import { CreateScooterDto } from './dto/create-scooter.dto';
+import { SearchScooterDto } from './dto/search-scooter.dto';
 import { UpdateScooterDto } from './dto/update-scooter.dto';
 import { Scooter } from './entities/scooter.entity';
+import { ScootersPagination } from './interfaces/scooters.pagination';
+import { ScootersRepository } from './scooters.repository';
 
 @Injectable()
 export class ScootersService {
   constructor(
-    // 注入 Users Entity
-    @InjectRepository(Scooter)
-    private readonly scooterRepo: Repository<Scooter>,
+    @InjectRepository(ScootersRepository)
+    private readonly scooterRepo: ScootersRepository,
   ) {}
 
-  async create(createScooterDto: CreateScooterDto): Promise<Scooter> {
-    return await this.scooterRepo.save(createScooterDto);
+  async createScooter(createScooterDto: CreateScooterDto): Promise<Scooter> {
+    return await this.scooterRepo.createScooter(createScooterDto);
   }
 
-  async findAll(): Promise<Scooter[]> {
-    return await this.scooterRepo.find();
+  async searchScooter(
+    searchScooterDto: SearchScooterDto,
+  ): Promise<ScootersPagination> {
+    const page = Math.max(1, searchScooterDto.page || 1);
+    const limit = Math.max(1, searchScooterDto.limit || 15);
+
+    // Apply search conditions
+    const conditions = new Brackets((qb) => {
+      if (
+        searchScooterDto.hasOwnProperty('plate_number') &&
+        searchScooterDto.plate_number !== ''
+      ) {
+        qb.andWhere('plate_number like :plateNumber', {
+          plateNumber: `%${searchScooterDto.plate_number}%`,
+        });
+      }
+
+      if (
+        searchScooterDto.hasOwnProperty('manufacture') &&
+        searchScooterDto.manufacture !== ''
+      ) {
+        qb.andWhere('manufacture like :manufacture', {
+          manufacture: `%${searchScooterDto.manufacture}%`,
+        });
+      }
+
+      if (
+        searchScooterDto.hasOwnProperty('model') &&
+        searchScooterDto.manufacture !== ''
+      ) {
+        qb.andWhere('model like :model', {
+          model: `%${searchScooterDto.model}%`,
+        });
+      }
+
+      if (
+        searchScooterDto.hasOwnProperty('mileage_lte') &&
+        searchScooterDto.mileage_lte > 0
+      ) {
+        qb.andWhere('mileage <= :mileageLte', {
+          mileageLte: searchScooterDto.mileage_lte,
+        });
+      }
+
+      if (
+        searchScooterDto.hasOwnProperty('mileage_gte') &&
+        searchScooterDto.mileage_gte > 0
+      ) {
+        qb.andWhere('mileage >= :mileageGte', {
+          mileageGte: searchScooterDto.mileage_gte,
+        });
+      }
+
+      if (searchScooterDto.hasOwnProperty('status')) {
+        qb.andWhere('status = :status', {
+          status: searchScooterDto.status,
+        });
+      }
+
+      if (
+        searchScooterDto.hasOwnProperty('manufacturing_lte') &&
+        searchScooterDto.manufacturing_lte > 0
+      ) {
+        qb.andWhere('mileage <= :manufacturingLte', {
+          manufacturingLte: searchScooterDto.manufacturing_lte,
+        });
+      }
+
+      if (
+        searchScooterDto.hasOwnProperty('manufacturing_gte') &&
+        searchScooterDto.manufacturing_gte > 0
+      ) {
+        qb.andWhere('mileage >= :manufacturingGte', {
+          manufacturingGte: searchScooterDto.manufacturing_gte,
+        });
+      }
+    });
+
+    return await this.scooterRepo.searchScooter(page, limit, conditions);
   }
 
-  async findOne(plateNumber: string) {
-    return await this.scooterRepo.findOne(plateNumber);
+  async findScooter(plateNumber: string) {
+    const scooter = await this.scooterRepo.findOne(plateNumber);
+    if (!scooter) {
+      throw new NotFoundException(`Not Found Scooter Data: "${plateNumber}"`);
+    }
+    return scooter;
   }
 
-  update(plateNumber: string, updateScooterDto: UpdateScooterDto) {
-    return `This action updates a #${plateNumber} scooter`;
+  async updateScooter(
+    plateNumber: string,
+    updateScooterDto: UpdateScooterDto,
+  ): Promise<Scooter> {
+    // Get scooter record
+    const scooter = await this.findScooter(plateNumber);
+
+    // Apply update data to scooter record
+    Object.assign(scooter, updateScooterDto);
+
+    // Save changes
+    return await this.scooterRepo.save(scooter);
   }
 }
