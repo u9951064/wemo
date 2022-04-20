@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiParam,
@@ -22,9 +23,11 @@ import { UpdateScooterDto } from './dto/update-scooter.dto';
 import { SearchScooterDto } from './dto/search-scooter.dto';
 import { Scooter } from './entities/scooter.entity';
 import { ScootersPaginationDto } from './dto/scooter-pagination.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('scooters')
-@ApiTags('scooters')
+@ApiTags('Scooters')
+@UseGuards(JwtAuthGuard)
 export class ScootersController {
   constructor(private readonly scootersService: ScootersService) {}
 

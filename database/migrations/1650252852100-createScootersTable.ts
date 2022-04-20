@@ -1,11 +1,4 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableIndex,
-  TableColumn,
-  TableForeignKey,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
 export class createScootersTable1650252852100 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -32,9 +25,42 @@ export class createScootersTable1650252852100 implements MigrationInterface {
           {
             name: 'gps_position',
             type: 'varchar',
-            length: '20',
+            length: '30',
             isNullable: false,
             comment: 'GPS座標',
+          },
+          {
+            name: 'manufacture',
+            type: 'varchar',
+            length: '25',
+            isNullable: false,
+            comment: '廠牌',
+          },
+          {
+            name: 'model',
+            type: 'varchar',
+            length: '25',
+            isNullable: false,
+            comment: '型號',
+          },
+          {
+            name: 'license_number',
+            type: 'varchar',
+            length: '25',
+            isNullable: false,
+            comment: '行照號碼',
+          },
+          {
+            name: 'license_published_at',
+            type: 'timestamp',
+            isNullable: false,
+            comment: '行照發照日期',
+          },
+          {
+            name: 'manufacturing_year',
+            type: 'integer',
+            isNullable: false,
+            comment: '出廠年份',
           },
           {
             name: 'status',
