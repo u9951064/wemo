@@ -4,6 +4,7 @@ import { User } from './entities/user.entity';
 import { AuthUserDto } from './dto/auth-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InternalServerErrorException } from '@nestjs/common';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @EntityRepository(User)
 export class UsersRepository extends Repository<User> {
@@ -31,6 +32,29 @@ export class UsersRepository extends Repository<User> {
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     const user = this.create(createUserDto);
     user.password = await this.getHashedPassword(createUserDto.password);
+
+    try {
+      await user.save();
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+
+    return user;
+  }
+
+  /**
+   * 更新的使用者
+   * @param {User} user 使用者紀錄
+   * @param {UpdateUserDto} updateUserDto 要更新的使用者資料
+   * @returns
+   */
+  async updateUser(user: User, updateUserDto: UpdateUserDto): Promise<User> {
+    if (
+      updateUserDto.hasOwnProperty('password') &&
+      updateUserDto.password !== ''
+    ) {
+      user.password = await this.getHashedPassword(updateUserDto.password);
+    }
 
     try {
       await user.save();

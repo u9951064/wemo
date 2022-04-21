@@ -1,9 +1,15 @@
 import * as bcrypt from 'bcrypt';
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthUserDto } from './dto/auth-user.dto';
 import { UsersRepository } from './users.repository';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 // This should be a real class/interface representing a user entity
 export type User = any;
@@ -37,5 +43,40 @@ export class UsersService {
     }
 
     return undefined;
+  }
+
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const isExist = await this.userRepo.findOne({
+      username: createUserDto.username,
+    });
+    if (isExist) {
+      throw new ConflictException(
+        `Username existed: "${createUserDto.username}"`,
+      );
+    }
+    return await this.userRepo.createUser(createUserDto);
+  }
+
+  async updateUser(
+    userId: number,
+    UpdateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    const user = await this.getUser(userId);
+    Object.keys(UpdateUserDto).forEach((k) => {
+      if (k === 'password') {
+        return;
+      }
+      user[k] = UpdateUserDto[k];
+    });
+
+    return await this.userRepo.updateUser(user, UpdateUserDto);
+  }
+
+  async getUser(userId: number): Promise<User> {
+    const user = await this.userRepo.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('查無指定使用者資料');
+    }
+    return user;
   }
 }

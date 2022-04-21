@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiParam,
   ApiOperation,
   ApiTags,
@@ -27,6 +28,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('scooters')
 @ApiTags('Scooters')
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 export class ScootersController {
   constructor(private readonly scootersService: ScootersService) {}
@@ -35,6 +37,7 @@ export class ScootersController {
   @ApiOperation({ summary: '新增車輛', description: '新增一筆車輛資料' })
   @ApiCreatedResponse({
     description: '建立成功',
+    type: Scooter,
   })
   @ApiConflictResponse({
     description: '車籍資料已經存在，請使用更新 Api',
